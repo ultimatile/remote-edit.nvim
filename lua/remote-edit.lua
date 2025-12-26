@@ -1,25 +1,26 @@
-local config = require("remote-edit.config")
 local core = require("remote-edit.core")
 
 ---@class RemoteEdit
 local M = {}
 
----@type RemoteEditConfig
-M.config = config.defaults
-
----@param opts RemoteEditConfig?
+-- Minimal setup function
 M.setup = function(opts)
-  M.config = vim.tbl_deep_extend("force", M.config, opts or {})
-  config.setup(M.config)
+  -- For now, just register the command
+  -- Configuration will be added later when needed
   
   vim.api.nvim_create_user_command("Redit", function(cmdopts)
     local arg = cmdopts.args and cmdopts.args:match("^%s*(.-)%s*$") or ""
     if arg ~= "" then
+      -- Direct host specified: :Redit user@host
       core.open_picker(arg)
     else
+      -- No host specified: :Redit (show host picker)
       core.pick_host(core.open_picker)
     end
-  end, { nargs = "?" })
+  end, { 
+    nargs = "?",
+    desc = "Edit remote files via scp. Usage: :Redit [user@host]"
+  })
 end
 
 return M
