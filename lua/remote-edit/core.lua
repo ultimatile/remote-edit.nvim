@@ -61,11 +61,11 @@ function M.browse_directory(host, path, show_hidden)
   local fzf = get_fzf()
   show_hidden = show_hidden or false
 
-  -- List directory contents
-  local ls_flag = show_hidden and "ls -1a" or "ls -1"
-  local stdout, _, _ = utils.ssh_run(host, ("%s %q"):format(ls_flag, path))
-  local list_output = utils.filter_ls_output(stdout, path)
-  local items = vim.split(list_output, "\n", { trimempty = true })
+  -- List directory contents with marker prefix
+  local ls_flag = show_hidden and "-1a" or "-1"
+  local remote_cmd = ("ls %s %q | sed 's/^/__LS__/'"):format(ls_flag, path)
+  local stdout, _, _ = utils.ssh_run(host, remote_cmd)
+  local items = utils.extract_marked_lines(stdout, "__LS__")
 
   local fzf_utils = require("fzf-lua.utils")
   local toggle_key = fzf_utils.neovim_bind_to_fzf(config.current.keymaps.toggle_hidden)

@@ -51,26 +51,16 @@ function M.parse_ssh_config()
   return hosts
 end
 
-function M.filter_ls_output(output, current_path)
-  local lines = vim.split(output, "\n")
-  local filtered = {}
-
-  for _, line in ipairs(lines) do
-    local trimmed = line:gsub("^%s+", ""):gsub("%s+$", "")
-    -- Skip empty lines and current/parent directory entries
-    if trimmed ~= "" then
-      -- ls -1a should never return '/' in a filename; drop noisy lines from shells
-      local is_shell_noise = trimmed:match("command not found")
-        or trimmed:match("syntax error")
-        or trimmed:match(": line %d+")
-        or trimmed:match("No such file or directory")
-      if trimmed ~= "." and trimmed ~= ".." and not trimmed:find("/") and not is_shell_noise then
-        table.insert(filtered, trimmed)
-      end
+-- Extract lines with marker prefix, stripping the marker
+function M.extract_marked_lines(output, marker)
+  local items = {}
+  for line in output:gmatch("[^\n]+") do
+    local content = line:match("^" .. marker .. "(.+)$")
+    if content and content ~= "." and content ~= ".." then
+      table.insert(items, content)
     end
   end
-
-  return table.concat(filtered, "\n")
+  return items
 end
 
 function M.join_path(base, item)
