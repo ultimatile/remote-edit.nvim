@@ -1,47 +1,56 @@
-# A Neovim Plugin Template
+# remote-edit.nvim
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/ellisonleao/nvim-plugin-template/lint-test.yml?branch=main&style=for-the-badge)
-![Lua](https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua)
+Edit remote files via SSH with fzf-lua integration.
 
-A template repository for Neovim plugins.
+## Requirements
 
-## Using it
+- Neovim >= 0.10
+- [fzf-lua](https://github.com/ibhagwan/fzf-lua)
+- SSH configured in `~/.ssh/config`
 
-Via `gh`:
+## Installation
 
+### lazy.nvim
+
+```lua
+return {
+  "ultimatile/remote-edit.nvim",
+  dependencies = { "ibhagwan/fzf-lua" },
+  opts = {},
+}
 ```
-$ gh repo create my-plugin -p ellisonleao/nvim-plugin-template
+
+## Usage
+
+```vim
+:Redit           " Select host from ~/.ssh/config
+:Redit hostname  " Connect to specified host directly
 ```
 
-Via github web page:
+Select a host from your SSH config, then browse and edit files.
 
-Click on `Use this template`
+### Keymaps (in fzf picker)
 
-![](https://docs.github.com/assets/cb-36544/images/help/repository/use-this-template-button.png)
+| Key | Action |
+|-----|--------|
+| `<C-h>` (default) | Show/hide dotfiles |
 
-## Features and structure
+Dotfiles are hidden by default. Press `<C-h>` in the fzf picker to toggle visibility.
 
-- 100% Lua
-- Github actions for:
-  - running tests using [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) and [busted](https://olivinelabs.com/busted/)
-  - check for formatting errors (Stylua)
-  - vimdocs autogeneration from README.md file
-  - luarocks release (LUAROCKS_API_KEY secret configuration required)
+## Configuration
 
-### Plugin structure
-
+```lua
+require("remote-edit").setup({
+  keymaps = {
+    toggle_hidden = "<C-h>",  -- change dotfile toggle key
+  },
+})
 ```
-.
-├── lua
-│   ├── plugin_name
-│   │   └── module.lua
-│   └── plugin_name.lua
-├── Makefile
-├── plugin
-│   └── plugin_name.lua
-├── README.md
-├── tests
-│   ├── minimal_init.lua
-│   └── plugin_name
-│       └── plugin_name_spec.lua
-```
+
+## License
+
+Apache-2.0
+
+## Acknowledgments
+
+Project structure based on [nvim-plugin-template](https://github.com/ellisonleao/nvim-plugin-template).
