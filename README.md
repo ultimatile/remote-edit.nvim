@@ -40,11 +40,11 @@ Dotfiles are hidden by default. Press `<C-h>` in the fzf picker to toggle visibi
 ## Configuration
 
 ```lua
-require("remote-edit").setup({
+opts = {
   keymaps = {
     toggle_hidden = "<C-h>",  -- change dotfile toggle key
   },
-})
+}
 ```
 
 ## License
