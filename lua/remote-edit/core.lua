@@ -63,7 +63,7 @@ function M.browse_directory(host, path, show_hidden)
 
   -- List directory contents with marker prefix
   local ls_flag = show_hidden and "-1a" or "-1"
-  local remote_cmd = ("ls %s %q | sed 's/^/__LS__/'"):format(ls_flag, path)
+  local remote_cmd = ("for f in $(ls %s %q); do printf '__LS__%%s\\n' \"$f\"; done"):format(ls_flag, path)
   local stdout, _, _ = utils.ssh_run(host, remote_cmd)
   local items = utils.extract_marked_lines(stdout, "__LS__")
 
@@ -79,12 +79,9 @@ function M.browse_directory(host, path, show_hidden)
           return ""
         end
         local full_path = utils.join_path(path, item)
-        local remote_cmd = ("if file %q; then echo; head -50 %q; else ls -la %q; fi 2>/dev/null"):format(
-          full_path,
-          full_path,
-          full_path
-        )
-        return utils.ssh_cmd(host, remote_cmd)
+        local remote_cmd =
+          ("file %q | sed 's/^/__PRV__/'; head -50 %q 2>/dev/null | sed 's/^/__PRV__/'"):format(full_path, full_path)
+        return utils.ssh_cmd(host, remote_cmd) .. " | grep '^__PRV__' | sed 's/^__PRV__//'"
       end,
     },
     actions = {
