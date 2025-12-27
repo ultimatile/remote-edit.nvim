@@ -1,4 +1,5 @@
 local utils = require("remote-edit.utils")
+local config = require("remote-edit.config")
 
 local M = {}
 
@@ -56,14 +57,18 @@ function M.open_picker(host, opts)
   M.browse_directory(host, home)
 end
 
-function M.browse_directory(host, path)
+function M.browse_directory(host, path, show_hidden)
   local fzf = get_fzf()
+  show_hidden = show_hidden or false
   
-  -- List directory contents with one entry per line (preserves spaces in names)
-  local stdout, _, _ = utils.ssh_run(host, ("ls -1a %q"):format(path))
+  -- List directory contents
+  local ls_flag = show_hidden and "ls -1a" or "ls -1"
+  local stdout, _, _ = utils.ssh_run(host, ("%s %q"):format(ls_flag, path))
   local list_output = utils.filter_ls_output(stdout, path)
   local items = vim.split(list_output, "\n", { trimempty = true })
 
+  local fzf_utils = require("fzf-lua.utils")
+  local toggle_key = fzf_utils.neovim_bind_to_fzf(config.current.keymaps.toggle_hidden)
   fzf.fzf_exec(items, {
     prompt = ("scp:%s:%s> "):format(host, path),
     preview = {
@@ -93,11 +98,14 @@ function M.browse_directory(host, path)
         
         if result == "dir" then
           -- Recursively browse directory
-          M.browse_directory(host, full_path)
+          M.browse_directory(host, full_path, show_hidden)
         else
           -- Edit file
           vim.cmd(("edit scp://%s//%s"):format(host, full_path))
         end
+      end,
+      [toggle_key] = function()
+        M.browse_directory(host, path, not show_hidden)
       end,
     },
   })
