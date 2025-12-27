@@ -1,0 +1,51 @@
+*remote-edit.txt*    Edit remote files via SSH    Last change: 2025 December 27
+
+==============================================================================
+CONTENTS                                              *remote-edit-contents*
+
+1. Introduction ............................................. |remote-edit|
+2. Requirements ..................................... |remote-edit-requirements|
+3. Commands ........................................... |remote-edit-commands|
+4. Configuration ................................. |remote-edit-configuration|
+
+==============================================================================
+INTRODUCTION                                                    *remote-edit*
+
+remote-edit.nvim provides a simple way to browse and edit remote files via
+SSH using fzf-lua as the file picker.
+
+==============================================================================
+REQUIREMENTS                                       *remote-edit-requirements*
+
+- Neovim >= 0.10
+- fzf-lua (https://github.com/ibhagwan/fzf-lua)
+- SSH configured in ~/.ssh/config
+
+==============================================================================
+COMMANDS                                               *remote-edit-commands*
+
+                                                                      *:Redit*
+:Redit [hostname]
+    Open remote file browser. Without argument, shows host picker from
+    ~/.ssh/config. With hostname argument, connects directly to that host.
+
+==============================================================================
+CONFIGURATION                                     *remote-edit-configuration*
+
+Call the setup function with optional configuration: >lua
+
+    require("remote-edit").setup({
+      keymaps = {
+        toggle_hidden = "<C-h>",  -- key to toggle dotfile visibility
+      },
+    })
+<
+                                              *remote-edit-keymaps*
+Keymaps (in fzf picker):
+
+    <C-h> (default)    Show/hide dotfiles
+
+Dotfiles are hidden by default.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:
