@@ -30,41 +30,6 @@ function M.remote_home(host)
   return nil, "Could not extract home directory from: " .. stdout
 end
 
-function M.build_find_command(home, opts)
-  opts = opts or {}
-  local maxdepth = opts.maxdepth or 3
-  local exclude = opts.exclude or ""
-  
-  -- Basic find with common exclusions
-  local cmd = ("find %q -maxdepth %d -type f"):format(home, maxdepth)
-  
-  -- Add common exclusions by default
-  cmd = cmd .. " \\( -name '.*' -o -name '*.log' -o -name '*.tmp' \\) -prune -o -type f -print"
-  
-  if exclude ~= "" then
-    cmd = cmd .. " " .. exclude
-  end
-  
-  cmd = cmd .. " 2>/dev/null"
-  return cmd
-end
-
-function M.filter_ssh_output(output)
-  -- Keep only lines that look like valid file paths
-  local lines = vim.split(output, "\n")
-  local filtered = {}
-  
-  for _, line in ipairs(lines) do
-    local trimmed = line:gsub("^%s+", ""):gsub("%s+$", "")
-    -- Keep lines that are valid absolute paths (start with / and contain valid path characters)
-    if trimmed:match("^/[%w%._/-]+$") then
-      table.insert(filtered, trimmed)
-    end
-  end
-  
-  return table.concat(filtered, "\n")
-end
-
 function M.parse_ssh_config()
   local ssh_config_path = vim.fn.expand("~/.ssh/config")
   
