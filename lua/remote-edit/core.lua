@@ -11,18 +11,28 @@ local function get_fzf()
   return fzf
 end
 
--- Temporary hardcoded hosts for testing
-local test_hosts = {"user@example.com", "admin@server.local"}
+function M.get_hosts()
+  -- Try to get hosts from SSH config
+  local ssh_hosts = utils.parse_ssh_config()
+  
+  if #ssh_hosts > 0 then
+    return ssh_hosts
+  end
+  
+  -- No hosts found
+  return {}
+end
 
 function M.pick_host(callback)
   local fzf = get_fzf()
+  local hosts = M.get_hosts()
   
-  if #test_hosts == 0 then
-    vim.notify("remote-edit: no hosts configured", vim.log.levels.ERROR)
+  if #hosts == 0 then
+    vim.notify("remote-edit: no hosts found in ~/.ssh/config", vim.log.levels.ERROR)
     return
   end
   
-  fzf.fzf_exec(test_hosts, {
+  fzf.fzf_exec(hosts, {
     prompt = "host> ",
     actions = {
       ["default"] = function(selected)
@@ -32,8 +42,9 @@ function M.pick_host(callback)
   })
 end
 
-function M.open_picker(host)
+function M.open_picker(host, opts)
   local fzf = get_fzf()
+  opts = opts or {}
   
   local home, err = utils.remote_home(host)
   if not home then
@@ -41,23 +52,52 @@ function M.open_picker(host)
     return
   end
   
-  -- Simple find command (hardcoded for now)
-  local find_cmd = ("find %q -maxdepth 2 -type f 2>/dev/null"):format(home)
-  local list_cmd = utils.ssh_cmd(host, find_cmd)
+  -- Start fuzzy filer from home directory
+  M.browse_directory(host, home)
+end
+
+function M.browse_directory(host, path)
+  local fzf = get_fzf()
   
-  fzf.fzf_exec(list_cmd, {
-    prompt = ("scp:%s> "):format(host),
+  -- List directory contents with one entry per line (preserves spaces in names)
+  local stdout, _, _ = utils.ssh_run(host, ("ls -1a %q"):format(path))
+  local list_output = utils.filter_ls_output(stdout, path)
+  local items = vim.split(list_output, "\n", { trimempty = true })
+
+  fzf.fzf_exec(items, {
+    prompt = ("scp:%s:%s> "):format(host, path),
     preview = {
       type = "cmd",
-      cmd = function(path)
-        return utils.ssh_cmd(host, ('sed -n "1,200p" %q'):format(path))
+      fn = function(items)
+        local item = items[1]
+        if not item or item == "" then return "" end
+        local full_path = utils.join_path(path, item)
+        local remote_cmd = ("if file %q; then echo; head -50 %q; else ls -la %q; fi 2>/dev/null"):format(
+          full_path,
+          full_path,
+          full_path
+        )
+        return utils.ssh_cmd(host, remote_cmd)
       end,
     },
     actions = {
       ["default"] = function(selected)
-        local path = selected[1]
-        if not path or path == "" then return end
-        vim.cmd(("edit scp://%s//%s"):format(host, path))
+        local item = selected[1]
+        if not item or item == "" then return end
+        
+        local full_path = utils.join_path(path, item)
+        
+        -- Check if it's a directory
+        local stdout, _, _ = utils.ssh_run(host, ("test -d %q && echo dir || echo file"):format(full_path))
+        local result = stdout:gsub("%s+", "")
+        
+        if result == "dir" then
+          -- Recursively browse directory
+          M.browse_directory(host, full_path)
+        else
+          -- Edit file
+          vim.cmd(("edit scp://%s//%s"):format(host, full_path))
+        end
       end,
     },
   })
