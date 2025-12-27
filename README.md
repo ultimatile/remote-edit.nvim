@@ -47,6 +47,18 @@ opts = {
 }
 ```
 
+## Troubleshooting
+
+If you see `scp: Received message too long` or `netrw: shell signalled an error`, your remote shell may be producing output in non-interactive sessions.
+
+Try adding this to the top of your remote `~/.bashrc`:
+
+```bash
+[[ $- != *i* ]] && return
+```
+
+This ensures `.bashrc` exits early for non-interactive sessions (like scp/sftp).
+
 ## License
 
 Apache-2.0

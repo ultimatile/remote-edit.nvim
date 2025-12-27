@@ -7,6 +7,7 @@ CONTENTS                                              *remote-edit-contents*
 2. Requirements ..................................... |remote-edit-requirements|
 3. Commands ........................................... |remote-edit-commands|
 4. Configuration ................................. |remote-edit-configuration|
+5. Troubleshooting ............................. |remote-edit-troubleshooting|
 
 ==============================================================================
 INTRODUCTION                                                    *remote-edit*
@@ -47,6 +48,18 @@ Keymaps (in fzf picker):
     <C-h> (default)    Show/hide dotfiles
 
 Dotfiles are hidden by default.
+
+==============================================================================
+TROUBLESHOOTING                                 *remote-edit-troubleshooting*
+
+If you see "scp: Received message too long" or "netrw: shell signalled an
+error", your remote shell may be producing output in non-interactive sessions.
+
+Try adding this to the top of your remote ~/.bashrc: >bash
+
+    [[ $- != *i* ]] && return
+<
+This ensures .bashrc exits early for non-interactive sessions (like scp/sftp).
 
 ==============================================================================
 vim:tw=78:ts=8:ft=help:norl:
