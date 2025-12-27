@@ -1,6 +1,6 @@
 describe("remote-edit.config", function()
   local config = require("remote-edit.config")
-  
+
   it("has default configuration", function()
     assert.is_table(config.defaults)
     assert.is_table(config.defaults.hosts)
@@ -8,9 +8,9 @@ describe("remote-edit.config", function()
     assert.is_number(config.defaults.find.maxdepth)
     assert.is_string(config.defaults.find.exclude)
   end)
-  
+
   it("can setup configuration", function()
-    local test_config = { hosts = {"user@test"} }
+    local test_config = { hosts = { "user@test" } }
     config.setup(test_config)
     assert.is_table(config.current.hosts)
     assert.same("user@test", config.current.hosts[1])

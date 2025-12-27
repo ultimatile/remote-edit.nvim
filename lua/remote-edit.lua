@@ -8,7 +8,7 @@ local M = {}
 M.setup = function(opts)
   -- Setup configuration
   config.setup(opts or {})
-  
+
   vim.api.nvim_create_user_command("Redit", function(cmdopts)
     local arg = cmdopts.args and cmdopts.args:match("^%s*(.-)%s*$") or ""
     if arg ~= "" then
@@ -20,9 +20,9 @@ M.setup = function(opts)
         core.open_picker(host, config.current.find)
       end)
     end
-  end, { 
+  end, {
     nargs = "?",
-    desc = "Edit remote files via scp. Usage: :Redit [user@host]"
+    desc = "Edit remote files via scp. Usage: :Redit [user@host]",
   })
 end
 

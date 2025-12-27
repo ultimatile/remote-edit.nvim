@@ -2,10 +2,7 @@ local M = {}
 
 -- Run ssh command and return stdout only (stderr separated)
 function M.ssh_run(host, remote_sh)
-  local res = vim.system(
-    { "ssh", "-T", "-q", "-o", "BatchMode=yes", host, remote_sh },
-    { text = true }
-  ):wait()
+  local res = vim.system({ "ssh", "-T", "-q", "-o", "BatchMode=yes", host, remote_sh }, { text = true }):wait()
   return res.stdout or "", res.stderr or "", res.code
 end
 
@@ -32,14 +29,14 @@ end
 
 function M.parse_ssh_config()
   local ssh_config_path = vim.fn.expand("~/.ssh/config")
-  
+
   if vim.fn.filereadable(ssh_config_path) == 0 then
     return {}
   end
-  
+
   local hosts = {}
   local lines = vim.fn.readfile(ssh_config_path)
-  
+
   for _, line in ipairs(lines) do
     -- Match "Host hostname" (case insensitive)
     local host = line:match("^%s*[Hh]ost%s+([^%s#]+)")
@@ -50,14 +47,14 @@ function M.parse_ssh_config()
       end
     end
   end
-  
+
   return hosts
 end
 
 function M.filter_ls_output(output, current_path)
   local lines = vim.split(output, "\n")
   local filtered = {}
-  
+
   for _, line in ipairs(lines) do
     local trimmed = line:gsub("^%s+", ""):gsub("%s+$", "")
     -- Skip empty lines and current/parent directory entries
@@ -72,7 +69,7 @@ function M.filter_ls_output(output, current_path)
       end
     end
   end
-  
+
   return table.concat(filtered, "\n")
 end
 

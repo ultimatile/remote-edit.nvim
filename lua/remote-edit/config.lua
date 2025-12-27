@@ -16,7 +16,7 @@ M.defaults = {
   hosts = {},
   find = {
     maxdepth = 2,
-    exclude = ""
+    exclude = "",
   },
   keymaps = {
     toggle_hidden = "<C-h>",
