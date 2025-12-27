@@ -105,7 +105,9 @@ function M.browse_directory(host, path, show_hidden)
           M.browse_directory(host, full_path, show_hidden)
         else
           -- Edit file
-          vim.cmd(("edit scp://%s//%s"):format(host, full_path))
+          local url = ("scp://%s/%s"):format(host, full_path)
+          vim.notify("DEBUG scp url: " .. url, vim.log.levels.INFO)
+          vim.cmd("edit " .. url)
         end
       end,
       [toggle_key] = function()
