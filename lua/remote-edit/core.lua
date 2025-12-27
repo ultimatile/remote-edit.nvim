@@ -93,16 +93,16 @@ function M.browse_directory(host, path, show_hidden)
 
         local full_path = utils.join_path(path, item)
 
-        -- Check if it's a directory
-        local stdout, _, _ = utils.ssh_run(host, ("test -d %q && echo dir || echo file"):format(full_path))
-        local result = stdout:gsub("%s+", "")
+        -- Check if it's a directory (use marker to filter shell noise)
+        local stdout, _, _ = utils.ssh_run(host, ("test -d %q && printf '\\n__TYPE__dir' || printf '\\n__TYPE__file'"):format(full_path))
+        local result = stdout:match("__TYPE__(%w+)")
 
         if result == "dir" then
           -- Recursively browse directory
           M.browse_directory(host, full_path, show_hidden)
         else
           -- Edit file
-          vim.cmd(("edit scp://%s//%s"):format(host, full_path))
+          vim.cmd(("edit scp://%s/%s"):format(host, full_path))
         end
       end,
       [toggle_key] = function()
